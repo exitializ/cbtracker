@@ -1,4 +1,4 @@
-var version = "2.0.15"
+var version = "2.0.20"
 versionCheck()
 setInterval(() => { versionCheck() }, 5000)
 
@@ -61,6 +61,9 @@ $('document').ready(async () => {
         priceTicker()
     }, 30000)
     loadData()
+    /*storeAccounts.forEach(async(address) => {
+        await subscribe(address)
+    })*/
 })
 
 async function refresh () {
@@ -170,19 +173,19 @@ async function loadData () {
                     element: charData.traitName,
                 };
             }))
-            charHtml = `<td>${chars[0].charId}</td>
+            charHtml = `<td data-cid="${chars[0].charId}">${chars[0].charId}</td>
                         <td>${levelToColor(chars[0].level)}</td>
                         <td>${elemToColor(chars[0].element)}</td>
                         <td>${chars[0].exp}</td>
-                        <td>${chars[0].nextLevel} (${(chars[0].mustClaim ? '<span class="text-gold">Claim now</span>' : `${chars[0].nextExp} xp left`)})</td>
-                        <td>${staminaToColor(chars[0].sta)}</td>`
+                        <td>${chars[0].nextLevel} (${(chars[0].mustClaim ? '<span class="text-gold">Claim now</span>' : `<span data-xp="${chars[0].charId}">${chars[0].nextExp}</span> xp left`)})</td>
+                        <td data-sta="${chars[0].charId}">${staminaToColor(chars[0].sta)}</td>`
         }else{
             charHtml = '<td colspan="6"></td>'
         }
         if (charLen < 1) {
             charLen = 1
         }
-        rowHtml += ` <tr class="text-white align-middle" data-row="${address}" data-index="${i}">
+        rowHtml += ` <tr class="text-white align-middle" data-row="${address}">
                             <td rowspan="${charLen}" class='align-middle' data-id="${address}">${storeNames[address]}</td>
                             <td rowspan="${charLen}" class='align-middle'>${addressPrivacy(address)}</td>
                             ${charHtml}
@@ -201,7 +204,7 @@ async function loadData () {
         if (chars.length > 1) {
             chars.forEach((char,j) => {
                 if (j > 0) {
-                    rowHtml += `<tr class="text-white align-middle" data-row="${address}" data-index="${i}">
+                    rowHtml += `<tr class="text-white align-middle" data-row="${address}">
                                         <td>${char.charId}</td>
                                         <td>${levelToColor(char.level)}</td>
                                         <td>${elemToColor(char.element)}</td>
@@ -367,9 +370,13 @@ async function simulate(address) {
     $('#combat-address').val(address)
     $('#combat-character').html(new Option('-- Select character --', ''))
     $('#combat-weapon').html(new Option('-- Select weapon --', ''))
+    $('#combat-stamina').html(new Option('-- Select multiplier --', ''))
     $('#combat-result').html('')
 
-    
+    for(var i = 1; i <= 5; i++) {
+        $('#combat-stamina').append(`<option value="${i}">${i * 40} stamina (x${i})</option>`)
+    }
+
     const charIds = await getAccountCharacters(address)
     const weapIds = await getAccountWeapons(address)
 
@@ -394,17 +401,19 @@ async function combatSimulate() {
     $('#btn-simulate').prop('disabled', true)
     const charId = $('#combat-character').val()
     const weapId = $('#combat-weapon').val()
+    const stamina = $('#combat-stamina').val()
     const combatResult = $('#combat-result')
     try {
         if (!charId) throw Error('Please select a character.')
         if (!weapId) throw Error('Please select a weapon.')
+        if (!stamina) throw Error('Please select a stamina multiplier.')
 
         combatResult.html('Generating results...')
 
         const sta = await getCharacterStamina(charId)
-        if (sta < 40) throw Error('Not enough stamina')
-        const fightGasOffset = fromEther(`${await fetchFightGasOffset()}`)
-        const fightBaseline = fromEther(`${await fetchFightBaseline()}`)
+        if (sta < 40 * parseInt(stamina)) throw Error('Not enough stamina')
+        const fightGasOffset = await fetchFightGasOffset()
+        const fightBaseline = await fetchFightBaseline()
 
         const charData = characterFromContract(charId, await getCharacterData(charId))
         const weapData = weaponFromContract(weapId, await getWeaponData(weapId))
@@ -412,13 +421,12 @@ async function combatSimulate() {
         const enemies = await getEnemyDetails(targets)
 
         combatResult.html('Enemy | Element | Power | Est. Reward | Chance<br><hr>')
-        enemies.map((enemy, i) => {
+        combatResult.append(await Promise.all(enemies.map(async (enemy, i) => {
             const chance = getWinChance(charData, weapData, enemy.power, enemy.trait)
             enemy.element = traitNumberToName(enemy.trait)
-
-            const reward = (parseFloat(fightGasOffset) + (parseFloat(fightBaseline) * Math.sqrt(parseInt(enemy.power) / 1000)));
-            combatResult.html(combatResult.html() + `#${i + 1} | ${elemToColor(enemy.element)} | ${enemy.power} | ${parseFloat(reward).toFixed(6)} | ${chanceColor(chance)}<br>`)
-        })
+            const reward = fromEther(await usdToSkill(web3.utils.toBN(Number(fightGasOffset) + ((Number(fightBaseline) * Math.sqrt(parseInt(enemy.power) / 1000)) * parseInt(stamina)))));
+            return `#${i + 1} | ${elemToColor(enemy.element)} | ${enemy.power} | ${truncateToDecimals(reward, 6)} | ${chanceColor(chance)}<br>`
+        })))
         $('#btn-simulate').removeAttr('disabled')
     } catch (e) {
         combatResult.html(e.message)
