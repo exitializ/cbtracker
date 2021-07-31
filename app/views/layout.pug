@@ -1,5 +1,5 @@
 doctype html
-html(lang='en')
+html#main(lang='en')
   head
     meta(charset='UTF-8')
     meta(name='viewport', content='width=device-width')
@@ -8,6 +8,7 @@ html(lang='en')
     link(rel='icon', sizes='32x32', type='image/png', href='/favicon/favicon.png')
     link(rel='stylesheet' media='screen' href='/css/bootstrap-table.min.css')
     link(rel='stylesheet' media='screen' href='/css/bootstrap-toggle.min.css')
+    link(rel='stylesheet' media='screen' href='/css/font-awesome.min.css')
 
     link(rel='stylesheet' media='screen' href='/vendor/simplebar/dist/simplebar.min.css')
     link(rel='stylesheet' media='screen' href='/vendor/prismjs/themes/prism.css')
@@ -16,14 +17,15 @@ html(lang='en')
 
     link(rel='stylesheet' media='screen' href='/css/theme.min.css')
     link(rel='stylesheet' media='screen' href='/css/core.css')
+    link(rel='stylesheet' media='screen' href='/css/main.css')
 
+    // Google Analytics
     script(async='' src='https://www.googletagmanager.com/gtag/js?id=GTM-5KS6L6F')
     script.
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'GTM-5KS6L6F');
-
 
   body(style='background-color: #12263f')
     block content
@@ -54,7 +56,9 @@ html(lang='en')
     script(type="text/javascript" src='/contracts/Weapons.js')
     script(type="text/javascript" src='/contracts/BasicPriceOracle.js')
     script(type="text/javascript" src='/contracts/NFTMarket.js')
-
     script(type="text/javascript" src='/js/utils.js')
     script(type="text/javascript" src='/js/library.js')
-    script(type="text/javascript" src='/js/core.js')
+    if page === 'logger'
+      script(type="text/javascript" src='/js/fight-logger.js')
+    if page === 'home'
+      script(type="text/javascript" src='/js/core.js')

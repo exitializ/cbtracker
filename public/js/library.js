@@ -15,12 +15,12 @@ const web3 = new Web3(NODE);
 
 // CONTRACTS
 
-const conStakingReward = new web3.eth.Contract(IStakingRewards.abi, stakingRewardAddress);
-const conStakingToken = new web3.eth.Contract(IERC20.abi, conStakingTokenAddress);
-const conCryptoBlades = new web3.eth.Contract(CryptoBlades.abi, mainAddress);
-const conCharacters = new web3.eth.Contract(Characters.abi, charAddress);
-const conWeapons = new web3.eth.Contract(Weapons.abi, weapAddress);
-const conOracle = new web3.eth.Contract(BasicPriceOracle.abi, oracleAddress);
+const conStakingReward = new web3.eth.Contract(IStakingRewards, stakingRewardAddress);
+const conStakingToken = new web3.eth.Contract(IERC20, conStakingTokenAddress);
+const conCryptoBlades = new web3.eth.Contract(CryptoBlades, mainAddress);
+const conCharacters = new web3.eth.Contract(Characters, charAddress);
+const conWeapons = new web3.eth.Contract(Weapons, weapAddress);
+const conOracle = new web3.eth.Contract(BasicPriceOracle, oracleAddress);
 
 const isAddress = address => web3.utils.isAddress(address);
 const getBNBBalance = address => web3.eth.getBalance(address);
@@ -46,3 +46,5 @@ const getPasLogs = options => web3.eth.abi.getPasLogs(options);
 const getLatestBlock = async () =>  web3.eth.getBlock('latest')
 const getPastEvents = async (event, fromBlock, toBlock, address, topics) =>  conCryptoBlades.getPastEvents(event, {fromBlock, toBlock, address, topics})
 const getTokenGainForFight = async (power, multi) => conCryptoBlades.methods.getTokenGainForFight(power, multi)
+const getTransaction = async hash => web3.eth.getTransaction(hash)
+const getTransactionReceipt = async hash => web3.eth.getTransactionReceipt(hash)
