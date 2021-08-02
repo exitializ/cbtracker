@@ -31,6 +31,8 @@ const getStakedTimeLeft = address => conStakingReward.methods.getStakeUnlockTime
 const getAccountCharacters = address => conCryptoBlades.methods.getMyCharacters().call({ from: address });
 const getAccountWeapons = address => conCryptoBlades.methods.getMyWeapons().call({ from: address });
 const getAccountSkillReward = address => conCryptoBlades.methods.getTokenRewards().call({ from: address });
+const getOwnRewardsClaimTax = address => conCryptoBlades.methods.getOwnRewardsClaimTax().call({ from: address });
+const getRewardsClaimTaxMax = address => conCryptoBlades.methods.REWARDS_CLAIM_TAX_MAX().call({ from: address });
 const getIngameSkill = address => conCryptoBlades.methods.inGameOnlyFunds(address).call({ from: address });
 const getCharacterExp = charId => conCryptoBlades.methods.getXpRewards(`${charId}`).call({ from: defaultAddress });
 const characterTargets = (charId, weapId) => conCryptoBlades.methods.getTargets(charId, weapId).call({ from: defaultAddress });
@@ -45,6 +47,5 @@ const decodeAbi = (types, data) => web3.eth.abi.decodeParameters(types, data);
 const getPasLogs = options => web3.eth.abi.getPasLogs(options);
 const getLatestBlock = async () =>  web3.eth.getBlock('latest')
 const getPastEvents = async (event, fromBlock, toBlock, address, topics) =>  conCryptoBlades.getPastEvents(event, {fromBlock, toBlock, address, topics})
-const getTokenGainForFight = async (power, multi) => conCryptoBlades.methods.getTokenGainForFight(power, multi)
 const getTransaction = async hash => web3.eth.getTransaction(hash)
 const getTransactionReceipt = async hash => web3.eth.getTransactionReceipt(hash)
