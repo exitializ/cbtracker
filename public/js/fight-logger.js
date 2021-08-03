@@ -32,7 +32,7 @@ async function subscribe (address) {
         }catch(e) {
             console.log(e)
         }
-    }, 1000)
+    }, fightInterval * 1000)
 }
 
 async function addAccount() {
@@ -109,8 +109,8 @@ function importList() {
         var fr = new FileReader();
         fr.readAsText(file);
         fr.addEventListener('load', function () {
-            var rows = fr.result.split("\r\n")
-            console.log(rows)
+            var rows = fr.result.split('\n')
+            rows = rows.map(row => row.replace(/\r?\n|\r/g, ''))
             if (rows.length) {
                 rows.forEach(async address => {
                     if (!Object.keys(subs).includes(address) && isAddress(address)) {
@@ -138,11 +138,4 @@ window.addEventListener('beforeunload', function (e) {
 
 $('#modal-add-account').on('shown.bs.modal', function (e) {
     $('#logger-address').val('')
-});
-
-window.addEventListener('beforeunload', function (e) {
-    if (fightResult.val()) {
-        e.preventDefault();
-        e.returnValue = 'Your fight logs will be lost. Please save them before closing/refreshing this page';
-    }
 });

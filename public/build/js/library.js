@@ -19,6 +19,9 @@ const isAddress = address => web3.utils.isAddress(address);
 const getBNBBalance = address => web3.eth.getBalance(address);
 const fromEther = (value) => web3.utils.fromWei(BigInt(value).toString(), 'ether');
 
+const getRewardsPoolBalance = () => conStakingToken.methods.balanceOf(mainAddress).call({ from: defaultAddress });
+const getStakingPoolBalance = () => conStakingToken.methods.balanceOf(stakingRewardAddress).call({ from: defaultAddress });
+
 const getStakedBalance = address => conStakingToken.methods.balanceOf(address).call({ from: defaultAddress });
 const getStakedRewards = address => conStakingReward.methods.balanceOf(address).call({ from: defaultAddress });
 const getStakedTimeLeft = address => conStakingReward.methods.getStakeUnlockTimeLeft().call({ from: address });
@@ -232,7 +235,6 @@ function getWinChance(charData, weapData, enemyPower, enemyElement) {
     const totalMultiplier = 1 + (0.075 * (weaponElement === playerElement ? 1 : 0)) + (0.075 * getElementAdvantage(playerElement, enemyElement));
     const playerMin = totalPower * totalMultiplier * 0.9;
     const playerMax = totalPower * totalMultiplier * 1.1;
-    const playerRange = playerMax - playerMin;
     const enemyMin = enemyPower * 0.9;
     const enemyMax = enemyPower * 1.1;
     let win = 0;
