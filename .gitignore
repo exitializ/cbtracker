@@ -54,3 +54,7 @@ ecosystem.config.js
 
 public/js/core2.js
 app/models/weapons.txt
+
+public/css/font/around-icons.woff
+public/fonts/around-icons.woff
+public/fonts/feather.woff
