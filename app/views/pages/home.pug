@@ -31,28 +31,23 @@ main.page-wrapper
           span#conv-total.mb-2.text-white.card-label
       .col-md-2.col-sm-6.px-2.mb-3
         .card.h-100.rounded-3.p-4.text-center.text-white.bg-dark
-          h6.fs-sm.fw-medium.text-muted Total BNB Balance
+          h6#label-tbalance.fs-sm.fw-medium.text-muted Total BNB Balance
           span#card-bnb.h4.text-white 0
           span#conv-bnb.mb-2.text-white.card-label
     .row.mx-n2.py-2
-      .col-md-3.col-sm-6.px-2.mb-3
+      .col-md-4.col-sm-6.px-2.mb-3
         .card.h-100.rounded-3.p-4.text-center.text-white.bg-dark
           h6.fs-sm.fw-medium.text-muted Total Accounts
           span#card-account.h4.text-white 0
-      .col-md-3.col-sm-6.px-2.mb-3
+      .col-md-4.col-sm-6.px-2.mb-3
         .card.h-100.rounded-3.p-4.text-center.text-white.bg-dark
           h6.fs-sm.fw-medium.text-muted Total Characters
           span#card-char.h4.text-white 0
-      .col-md-3.col-sm-6.px-2.mb-3
+      .col-md-4.col-sm-6.px-2.mb-3
         .card.h-100.rounded-3.p-4.text-center.text-white.bg-dark
           h6.fs-sm.fw-medium.text-muted Current Skill Price
           span#card-price.h4.text-white 0
           span#conv-price.mb-2.text-white.card-label
-      .col-md-3.col-sm-6.px-2.mb-3
-        .card.h-100.rounded-3.p-4.text-center.text-white.bg-dark
-          h6.fs-sm.fw-medium.text-muted Current Oracle Price
-          span#card-oracle.h4.text-white 0
-          span#conv-oracle.mb-2.text-white.card-label
     .row.mx-n2.py-2
       .col-md-12.col-sm-126.px-2.mb-3
         .card.bg-dark
@@ -75,10 +70,19 @@ main.page-wrapper
                   | Refresh
                 .form-check.form-switch(style='float: right;')
                   input#btn-tax.form-check-input(type="checkbox")
-                  label.form-check-label.h6.fs-sm.fw-medium.text-muted(for="btn-tax") Include Claim Taxes
+                  label.form-check-label.text-white(for="btn-tax") Include Claim Taxes
                 .form-check.form-switch(style='float: right; margin-right: 10px !important;')
                   input#btn-privacy.form-check-input(type="checkbox")
-                  label.form-check-label.text-white(for="btn-privacy") Hide address                
+                  label.form-check-label.text-white(for="btn-privacy") Hide address
+                .form-check.form-switch(style='float: right; margin-right: 10px !important;')
+                  input#btn-hunstake.form-check-input(type="checkbox")
+                  label.form-check-label.text-white(for="btn-privacy") Hide unstake time
+                .form-check.form-switch(style='float: right; margin-right: 10px !important;')
+                  input#btn-hskills.form-check-input(type="checkbox")
+                  label.form-check-label.text-white(for="btn-privacy") Hide skill assets                
+                .form-check.form-switch(style='float: right; margin-right: 10px !important;')
+                  input#btn-hchars.form-check-input(type="checkbox")
+                  label.form-check-label.text-white(for="btn-privacy") Hide characters
               .col-md-12
                 .table-responsive.mb-0
                   table#table-accounts.table.table-sm.card-table.table-bordered
@@ -86,40 +90,40 @@ main.page-wrapper
                       tr
                         th.text-white.align-middle(rowspan='2')
                           | Name
-                        th.text-white.align-middle(rowspan='2')
+                        th.text-white.align-middle.address-column(rowspan='2')
                           | Address
-                        th.text-white(colspan='6')
+                        th.text-white.char-column(colspan='6')
                           | Characters
-                        th.text-white(colspan='5')
+                        th.text-white.skill-column(colspan='5')
                           | Skill Assets
-                        th.text-white.align-middle(rowspan='2')
+                        th.text-white.align-middle.unstake-column(rowspan='2')
                           | Unstake Time
-                        th.text-white.align-middle(rowspan='2')
+                        th#label-balance.text-white.align-middle(rowspan='2')
                           | BNB Balance
                         th.text-white.align-middle(rowspan='2')
                           | Action
                       tr 
-                        th.text-white 
+                        th.text-white.char-column 
                           | ID
-                        th.text-white 
+                        th.text-white.char-column 
                           | Level
-                        th.text-white 
+                        th.text-white.char-column 
                           | Element
-                        th.text-white 
+                        th.text-white.char-column 
                           | Unclaimed XP
-                        th.text-white 
+                        th.text-white.char-column 
                           | Target Level
-                        th.text-white 
+                        th.text-white.char-column 
                           | Stamina
-                        th.text-white 
+                        th.text-white.skill-column 
                           | In-Game
-                        th.text-white 
+                        th.text-white.skill-column 
                           | Unclaimed 
-                        th.text-white 
+                        th.text-white.skill-column 
                           | Staked
-                        th.text-white 
+                        th.text-white.skill-column 
                           | Wallet
-                        th.text-white
+                        th.text-white.skill-column
                           | Total
                     tbody.text-center
               .col-md-12.mt-2

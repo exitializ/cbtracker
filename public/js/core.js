@@ -1,9 +1,13 @@
 var accounts = localStorage.getItem('accounts')
 var names = localStorage.getItem('names')
 var hideAddress = (localStorage.getItem('hideAddress') === 'true')
-var currCurrency = localStorage.getItem('currency')
-var currencies = ['php', 'aed', 'ars', 'aud', 'brl', 'cny', 'eur', 'gbp', 'hkd', 'idr', 'inr', 'jpy', 'myr', 'sgd', 'thb', 'twd', 'usd', 'ves', 'vnd']
 var includeClaimTax = (localStorage.getItem('includeClaimTax') === 'true')
+var hideChars = (localStorage.getItem('hideChars') === 'true')
+var hideSkills = (localStorage.getItem('hideSkills') === 'true')
+var hideUnstake = (localStorage.getItem('hideUnstake') === 'true')
+var currCurrency = localStorage.getItem('currency')
+var currencies = ['php', 'aed', 'ars', 'aud', 'brl', 'cny', 'eur', 'gbp', 'hkd', 'idr', 'inr', 'jpy', 'myr', 'sgd', 'thb', 'twd', 'usd', 'vnd']
+var networks = ['bsc', 'heco']
 var rewardsClaimTaxMax = 0;
 var storeAccounts = []
 var storeNames = {}
@@ -14,12 +18,15 @@ var usdPrice = 0
 var $table = $('#table-accounts tbody')
 
 if (!currCurrency) currCurrency = 'usd'
+if (!currentNetwork) currentNetwork = 'bsc'
 if (accounts && names) {
     storeAccounts = JSON.parse(accounts)
     storeNames = JSON.parse(names)
 }
 
 populateCurrency()
+populateNetwork()
+updateBalanceLabel()
 
 if (hideAddress) {
     $('#btn-privacy').prop('checked', true)
@@ -33,6 +40,24 @@ if (includeClaimTax) {
     $('#btn-tax').removeAttr('checked')
 }
 
+if (hideChars) {
+    $('#btn-hchars').prop('checked', true)
+} else {
+    $('#btn-hchars').removeAttr('checked')
+}
+
+if (hideSkills) {
+    $('#btn-hskills').prop('checked', true)
+} else {
+    $('#btn-hskills').removeAttr('checked')
+}
+
+if (hideUnstake) {
+    $('#btn-hunstake').prop('checked', true)
+} else {
+    $('#btn-hunstake').removeAttr('checked')
+}
+
 var $cardIngame = $('#card-ingame'),
     $cardUnclaim = $('#card-unclaim'),
     $cardStake = $('#card-stake'),
@@ -43,40 +68,30 @@ var $cardIngame = $('#card-ingame'),
     $cardAccount = $('#card-account'),
     $cardChar = $('#card-char'),
     $cardPrice = $('#card-price'),
-    $cardOracle = $('#card-oracle'),
     $convIngame = $('#conv-ingame'),
     $convUnclaim = $('#conv-unclaim'),
     $convStake = $('#conv-stake'),
     $convWallet = $('#conv-wallet'),
     $convTotal = $('#conv-total'),
     $convBnb = $('#conv-bnb'),
-    $convPrice = $('#conv-price'),
-    $convOracle = $('#conv-oracle')
+    $convPrice = $('#conv-price')
 
 $('document').ready(async () => {
     priceTicker()
-    oracleTicker()
     setRewardsClaimTaxMax()
     setInterval(() => {
         fiatConversion()
     }, 1000)
-    setInterval(async() => {
-        oracleTicker()
-    }, 10000)
     setInterval(() => {
         priceTicker()
-    }, 30000)
+    }, 10000)
     loadData()
 })
 
 async function refresh () {
     loadData()
+    clearFiat()
     fiatConversion()
-}
-
-async function oracleTicker() {
-    var oraclePrice = 1 / fromEther(`${await getOraclePrice()}`)
-    $cardOracle.html(`${oraclePrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`)
 }
 
 function fiatConversion () {
@@ -86,7 +101,6 @@ function fiatConversion () {
     if (isElementNotZero($cardWallet)) $convWallet.html(`(${toLocaleCurrency(convertToFiat($cardWallet.html()))})`)
     if (isElementNotZero($cardTotal)) $convTotal.html(`(${toLocaleCurrency(convertToFiat($cardTotal.html()))})`)
     if (isElementNotZero($cardBnb)) $convBnb.html(`(${toLocaleCurrency(convertBnbToFiat($cardBnb.html()))})`)
-    if (isElementNotZero($cardOracle) && currCurrency !== 'usd') $convOracle.html(`(${toLocaleCurrency(localeCurrencyToNumber($cardOracle.html()) * usdPrice)})`)
     if (isElementNotZero($cardPrice) && currCurrency !== 'usd') $convPrice.html(`(${toLocaleCurrency(localPrice)})`)
 }
 function clearFiat () {
@@ -97,7 +111,6 @@ function clearFiat () {
     $convTotal.html('')
     $convBnb.html('')
     $convPrice.html('')
-    $convOracle.html('')
 }
 
 function isElementNotZero ($elem) {
@@ -141,17 +154,17 @@ async function loadData () {
     $cardAccount.html(storeAccounts.length)
 
     
-    const fRowHtml = await Promise.all(storeAccounts.map(async (address, i) => {
+    var fRowHtml = await Promise.all(storeAccounts.map(async (address, i) => {
         let rowHtml = ''
-        const charIds = await getAccountCharacters(address)
-        const binance = await getBNBBalance(address)
-        const wallet = await getStakedBalance(address)
-        const staked = await getStakedRewards(address)
-        const unclaimed = await getAccountSkillReward(address)
-        const claimTax = await getOwnRewardsClaimTax(address);
-        const unclaimedTaxed = unclaimed*(1-convertClaimTax(claimTax))
-        const ingame = await getIngameSkill(address)
-        const timeLeft = await getStakedTimeLeft(address)
+        var charIds = await getAccountCharacters(address)
+        var binance = await getBNBBalance(address)
+        var wallet = await getStakedBalance(address)
+        var staked = await getStakedRewards(address)
+        var unclaimed = await getAccountSkillReward(address)
+        var claimTax = await getOwnRewardsClaimTax(address);
+        var unclaimedTaxed = unclaimed*(1-convertClaimTax(claimTax))
+        var ingame = await getIngameSkill(address)
+        var timeLeft = await getStakedTimeLeft(address)
 
 
         var charCount = parseInt($cardChar.html())
@@ -172,10 +185,10 @@ async function loadData () {
         
         if (charLen > 0){
             chars = await Promise.all(charIds.map(async charId => {
-                const charData = await characterFromContract(charId, await getCharacterData(charId))
-                const exp = await getCharacterExp(charId)
-                const sta = await getCharacterStamina(charId)
-                const nextTargetExpLevel = getNextTargetExpLevel(charData.level)
+                var charData = await characterFromContract(charId, await getCharacterData(charId))
+                var exp = await getCharacterExp(charId)
+                var sta = await getCharacterStamina(charId)
+                var nextTargetExpLevel = getNextTargetExpLevel(charData.level)
                 return {
                     charId,
                     exp,
@@ -188,32 +201,33 @@ async function loadData () {
                     element: charData.traitName,
                 };
             }))
-            charHtml = `<td data-cid="${chars[0].charId}">${chars[0].charId}</td>
-                        <td>${levelToColor(chars[0].level)}</td>
-                        <td>${elemToColor(chars[0].element)}</td>
-                        <td><span data-cid="${chars[0].charId}">${chars[0].exp}</span> xp</td>
-                        <td>${chars[0].nextLevel}<br/><span style='font-size: 10px'>${(chars[0].mustClaim ? '<span class="text-gold">(Claim now)</span>' : `<span data-xp="${chars[0].charId}">(${chars[0].nextExp}</span> xp left)`)}</span></td>
-                        <td data-sta="${chars[0].charId}">${staminaToColor(chars[0].sta)}<br/>${staminaFullAt(chars[0].sta)}</td>`
+            charHtml = `<td class="char-column" data-cid="${chars[0].charId}">${chars[0].charId}</td>
+                        <td class="char-column">${levelToColor(chars[0].level)}</td>
+                        <td class="char-column">${elemToColor(chars[0].element)}</td>
+                        <td class="char-column"><span data-cid="${chars[0].charId}">${chars[0].exp}</span> xp</td>
+                        <td class="char-column">${chars[0].nextLevel}<br/><span style='font-size: 10px'>${(chars[0].mustClaim ? '<span class="text-gold">(Claim now)</span>' : `<span data-xp="${chars[0].charId}">(${chars[0].nextExp}</span> xp left)`)}</span></td>
+                        <td class="char-column" data-sta="${chars[0].charId}">${staminaToColor(chars[0].sta)}<br/>${staminaFullAt(chars[0].sta)}</td>`
         }else{
-            charHtml = '<td colspan="6"></td>'
+            charHtml = '<td class="char-column" colspan="6"></td>'
         }
         if (charLen < 1) {
             charLen = 1
         }
-        const skillTotal = sumOfArray([unclaimed, staked, wallet])
+        var skillTotal = sumOfArray([unclaimed, staked, wallet])
         rowHtml += ` <tr class="text-white align-middle" data-row="${address}">
                             <td rowspan="${charLen}" class='align-middle' data-id="${address}">${storeNames[address]}</td>
-                            <td rowspan="${charLen}" class='align-middle'>${addressPrivacy(address)}</td>
+                            <td rowspan="${charLen}" class='align-middle address-column'>${address}</td>
                             ${charHtml}
-                            <td rowspan="${charLen}" class='align-middle'>${formatNumber(fromEther(ingame))}<br />${(Number(parseFloat(fromEther(ingame)).toFixed(6)) > 0 ? `<span style="font-size: 10px;">(${toLocaleCurrency(convertToFiat(Number(fromEther(ingame))))})</span>` : '')}</td>
-                            <td rowspan="${charLen}" class='align-middle'>${formatNumber(fromEther(unclaimed))}<br />${(Number(parseFloat(fromEther(unclaimed)).toFixed(6)) > 0 ? `<span style="font-size: 10px;">(${toLocaleCurrency(convertToFiat(Number(fromEther(unclaimed))))})</span>` : '')}</td>
-                            <td rowspan="${charLen}" class='align-middle'>${formatNumber(fromEther(staked))}<br />${(Number(parseFloat(fromEther(staked)).toFixed(6)) > 0 ? `<span style="font-size: 10px;">(${toLocaleCurrency(convertToFiat(Number(fromEther(staked))))})</span>` : '')}</td>
-                            <td rowspan="${charLen}" class='align-middle'>${formatNumber(fromEther(wallet))}<br />${(Number(parseFloat(fromEther(wallet)).toFixed(6)) > 0 ? `<span style="font-size: 10px;">(${toLocaleCurrency(convertToFiat(Number(fromEther(wallet))))})</span>` : '')}</td>
-                            <td rowspan="${charLen}" class='align-middle'>${formatNumber(fromEther(skillTotal))}<br />${(Number(parseFloat(fromEther(skillTotal)).toFixed(6)) > 0 ? `<span style="font-size: 10px;">(${toLocaleCurrency(convertToFiat(Number(fromEther(skillTotal))))})</span>` : '')}</td>
-                            <td rowspan="${charLen}" class='align-middle'>${(timeLeft > 0 ? unstakeSkillAt(timeLeft) : (Number(parseFloat(fromEther(staked)).toFixed(6)) > 0 ? '<span class="text-gold">Claim now</span>' : ''))}</td>
+                            <td class="skill-column" rowspan="${charLen}" class='align-middle'>${formatNumber(fromEther(ingame))}<br />${(Number(parseFloat(fromEther(ingame)).toFixed(6)) > 0 ? `<span style="font-size: 10px;">(${toLocaleCurrency(convertToFiat(Number(fromEther(ingame))))})</span>` : '')}</td>
+                            <td class="skill-column" rowspan="${charLen}" class='align-middle'>${formatNumber(fromEther(unclaimed))}<br />${(Number(parseFloat(fromEther(unclaimed)).toFixed(6)) > 0 ? `<span style="font-size: 10px;">(${toLocaleCurrency(convertToFiat(Number(fromEther(unclaimed))))})</span>` : '')}</td>
+                            <td class="skill-column" rowspan="${charLen}" class='align-middle'>${formatNumber(fromEther(staked))}<br />${(Number(parseFloat(fromEther(staked)).toFixed(6)) > 0 ? `<span style="font-size: 10px;">(${toLocaleCurrency(convertToFiat(Number(fromEther(staked))))})</span>` : '')}</td>
+                            <td class="skill-column" rowspan="${charLen}" class='align-middle'>${formatNumber(fromEther(wallet))}<br />${(Number(parseFloat(fromEther(wallet)).toFixed(6)) > 0 ? `<span style="font-size: 10px;">(${toLocaleCurrency(convertToFiat(Number(fromEther(wallet))))})</span>` : '')}</td>
+                            <td class="skill-column" rowspan="${charLen}" class='align-middle'>${formatNumber(fromEther(skillTotal))}<br />${(Number(parseFloat(fromEther(skillTotal)).toFixed(6)) > 0 ? `<span style="font-size: 10px;">(${toLocaleCurrency(convertToFiat(Number(fromEther(skillTotal))))})</span>` : '')}</td>
+                            <td class="unstake-column" rowspan="${charLen}" class='align-middle'>${(timeLeft > 0 ? unstakeSkillAt(timeLeft) : (Number(parseFloat(fromEther(staked)).toFixed(6)) > 0 ? '<span class="text-gold">Claim now</span>' : ''))}</td>
                             <td rowspan="${charLen}" class='align-middle'>${bnbFormatter(formatNumber(fromEther(binance)))}<br />${(Number(parseFloat(fromEther(binance)).toFixed(6)) > 0 ? `<span style="font-size: 10px;">(${toLocaleCurrency(convertBnbToFiat(Number(fromEther(binance))))})</span>` : '')}</td>
                             <td rowspan="${charLen}" class='align-middle'><button type="button" class="btn btn-success btn-sm mb-1" onclick="rename('${address}')">Rename</button><br>
                             <button type="button" class="btn btn-warning btn-sm mb-1" onclick="simulate('${address}')">Combat Simulator</button><br>
+                            <button type="button" class="btn btn-primary btn-sm mb-1" onclick="logs('${address}')">Hunt Logs</button><br>
                             <button type="button" class="btn btn-danger btn-sm" onclick="remove('${address}')">Remove</button></td>
                         </tr>`;
         
@@ -221,12 +235,12 @@ async function loadData () {
             chars.forEach((char,j) => {
                 if (j > 0) {
                     rowHtml += `<tr class="text-white align-middle" data-row="${address}">
-                                        <td>${char.charId}</td>
-                                        <td>${levelToColor(char.level)}</td>
-                                        <td>${elemToColor(char.element)}</td>
-                                        <td><span data-cid="${char.charId}">${char.exp}</span> xp</td>
-                                        <td>${char.nextLevel}<br/><span style='font-size: 10px'>(${(char.mustClaim ? '<span class="text-gold">Claim now</span>' : `<span data-xp="${char.charId}">${char.nextExp}</span> xp left`)})</span></td>
-                                        <td>${staminaToColor(char.sta)}<br/>${staminaFullAt(char.sta)}</td>
+                                        <td class="char-column">${char.charId}</td>
+                                        <td class="char-column">${levelToColor(char.level)}</td>
+                                        <td class="char-column">${elemToColor(char.element)}</td>
+                                        <td class="char-column"><span data-cid="${char.charId}">${char.exp}</span> xp</td>
+                                        <td class="char-column">${char.nextLevel}<br/><span style='font-size: 10px'>(${(char.mustClaim ? '<span class="text-gold">Claim now</span>' : `<span data-xp="${char.charId}">${char.nextExp}</span> xp left`)})</span></td>
+                                        <td class="char-column">${staminaToColor(char.sta)}<br/>${staminaFullAt(char.sta)}</td>
                                     </tr>`
                 }
                 
@@ -234,7 +248,11 @@ async function loadData () {
         }
         return rowHtml
     }))
-    $table.html(fRowHtml)    
+    $table.html(fRowHtml)
+    addressHelper(hideAddress)
+    charHelper(hideChars)
+    skillsHelper(hideSkills)
+    unstakeHelper(hideUnstake)
     $('.btn-refresh').removeAttr('disabled')
 }
 
@@ -253,6 +271,16 @@ function populateCurrency() {
     currencies.forEach(curr => {
         if (currCurrency !== curr) {
             $("#select-currency").append(new Option(curr.toUpperCase(), curr));
+        }
+    })
+}
+
+function populateNetwork() {
+    $('#select-network').html('');
+    $("#select-network").append(new Option(currentNetwork.toUpperCase(), currentNetwork));
+    networks.forEach(net => {
+        if (currentNetwork !== net) {
+            $("#select-network").append(new Option(net.toUpperCase(), net));
         }
     })
 }
@@ -281,25 +309,12 @@ function renameAccount() {
 }
 
 async function priceTicker() {
-    $.get(`https://api.coingecko.com/api/v3/simple/price?ids=cryptoblades,binancecoin,tether&vs_currencies=${currencies.join(',')}`, async (result) => {
-        skillPrice = result.cryptoblades['usd']
-        if (currCurrency === 'ves'){
-            bnbPrice = result.cryptoblades['usd']
-            await getVESUSDPrice()
-        }else {
-            localPrice = result.cryptoblades[currCurrency]
-            bnbPrice = result.binancecoin[currCurrency]
-            usdPrice = result.tether[currCurrency]
-        }
+    skillPrice = await getSkillPrice()
+    $.get(`https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=${currencies.join(',')}`, async (result) => {
+        usdPrice = result.tether[currCurrency]
+        localPrice = usdPrice * skillPrice        
+        bnbPrice = await getGasPrice() * usdPrice
         $cardPrice.html(skillPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' }))
-    })
-}
-
-async function getVESUSDPrice() {
-    $.get('https://s3.amazonaws.com/dolartoday/data.json', (result) => {
-        localPrice = result.USD.transferencia * skillPrice
-        usdPrice = result.USD.transferencia
-        bnbPrice = bnbPrice * usdPrice
     })
 }
 
@@ -315,11 +330,11 @@ function charFormatter(val) {
 
 function elemToColor(elem) {
     switch (elem) {
-        case 'Fire': return `<span style='color: red'>${elem}</span>`
-        case 'Earth': return `<span style='color: green'>${elem}</span>`
-        case 'Lightning': return `<span style='color: yellow'>${elem}</span>`
-        case 'Water': return `<span style='color: cyan'>${elem}</span>`
-        default: return `<span style='color: red'>${elem}</span>`
+        case 'Fire': return '<img src="/img/fire.png" alt="Fire" width="20">'
+        case 'Earth': return '<img src="/img/earth.png" alt="Earth" width="20">'
+        case 'Lightning': return '<img src="/img/lightning.png" alt="Lightning" width="20">'
+        case 'Water': return '<img src="/img/water.png" alt="Water" width="20">'
+        default: return `<span style='color: red'>N/A</span>`
     }
 }
 
@@ -381,11 +396,6 @@ function nameFormatter(val) {
     return storeNames[val]
 }
 
-function privacyFormatter(val) {
-    if (hideAddress) return addressPrivacy(val)
-    return val
-}
-
 function convertSkill(value) {
     return (parseFloat(value) > 0 ? `${formatNumber(value)}<br><span class="fs-md">(${(parseFloat(value) * parseFloat(skillPrice)).toLocaleString('en-US', { style: 'currency', currency: currCurrency.toUpperCase() })})</span>` : 0)
 }
@@ -399,11 +409,13 @@ function convertClaimTax(value) {
 }
 
 function remove(address) {
-    storeAccounts.splice(storeAccounts.indexOf(address), 1)
-    delete storeNames[address]
-    if (storeAccounts) localStorage.setItem('accounts', JSON.stringify(storeAccounts))
-    if (storeNames) localStorage.setItem('names', JSON.stringify(storeNames))
-    refresh()
+    if (confirm(`Are you sure you want to remove ${storeNames[address]}?`)){
+        storeAccounts.splice(storeAccounts.indexOf(address), 1)
+        delete storeNames[address]
+        if (storeAccounts) localStorage.setItem('accounts', JSON.stringify(storeAccounts))
+        if (storeNames) localStorage.setItem('names', JSON.stringify(storeNames))
+        refresh()
+    }
 }
 
 async function simulate(address) {
@@ -418,17 +430,17 @@ async function simulate(address) {
         $('#combat-stamina').append(`<option value="${i}">${i * 40} stamina (x${i})</option>`)
     }
 
-    const charIds = await getAccountCharacters(address)
-    const weapIds = await getAccountWeapons(address)
+    var charIds = await getAccountCharacters(address)
+    var weapIds = await getAccountWeapons(address)
 
-    const charHtml = await Promise.all(charIds.map(async charId => {
-        const charData = characterFromContract(charId, await getCharacterData(charId))
-        const sta = await getCharacterStamina(charId)
+    var charHtml = await Promise.all(charIds.map(async charId => {
+        var charData = characterFromContract(charId, await getCharacterData(charId))
+        var sta = await getCharacterStamina(charId)
         return `<option style="${getClassFromTrait(charData.trait)}" value="${charId}">${charId} | ${charData.traitName} | Lv. ${(charData.level + 1)} | Sta. ${sta}/200</option>`
     }))
-    const weaponsData = await Promise.all(weapIds.map(async weapId => weaponFromContract(weapId, await getWeaponData(weapId))));
+    var weaponsData = await Promise.all(weapIds.map(async weapId => weaponFromContract(weapId, await getWeaponData(weapId))));
     weaponsData.sort((a, b) => b.stars - a.stars);
-    const weapHtml = weaponsData.map(weapData => (
+    var weapHtml = weaponsData.map(weapData => (
         `<option style="${getClassFromTrait(weapData.trait)}" value="${weapData.id}">${weapData.id} | ${weapData.stars + 1}-star ${weapData.element}</option>`
     ));
     $("#combat-character").append(charHtml)
@@ -441,10 +453,10 @@ async function simulate(address) {
 
 async function combatSimulate() {
     $('#btn-simulate').prop('disabled', true)
-    const charId = $('#combat-character').val()
-    const weapId = $('#combat-weapon').val()
-    const stamina = $('#combat-stamina').val()
-    const combatResult = $('#combat-result')
+    var charId = $('#combat-character').val()
+    var weapId = $('#combat-weapon').val()
+    var stamina = $('#combat-stamina').val()
+    var combatResult = $('#combat-result')
     try {
         if (!charId) throw Error('Please select a character.')
         if (!weapId) throw Error('Please select a weapon.')
@@ -452,23 +464,21 @@ async function combatSimulate() {
 
         combatResult.html('Generating results...')
 
-        const sta = await getCharacterStamina(charId)
+        var sta = await getCharacterStamina(charId)
         if (sta < 40 * parseInt(stamina)) throw Error('Not enough stamina')
-        const fightGasOffset = await fetchFightGasOffset()
-        const fightBaseline = await fetchFightBaseline()
 
-        const charData = characterFromContract(charId, await getCharacterData(charId))
-        const weapData = weaponFromContract(weapId, await getWeaponData(weapId))
-        const targets = await characterTargets(charId, weapId)
-        const enemies = await getEnemyDetails(targets)
+        var charData = characterFromContract(charId, await getCharacterData(charId))
+        var weapData = weaponFromContract(weapId, await getWeaponData(weapId))
+        var targets = await characterTargets(charId, weapId)
+        var enemies = await getEnemyDetails(targets)
 
         combatResult.html('Enemy | Element | Power | Est. Reward | XP | Chance<br><hr>')
         combatResult.append(await Promise.all(enemies.map(async (enemy, i) => {
-            const chance = getWinChance(charData, weapData, enemy.power, enemy.trait)
+            var chance = getWinChance(charData, weapData, enemy.power, enemy.trait)
             enemy.element = traitNumberToName(enemy.trait)
-            const reward = fromEther(await usdToSkill(web3.utils.toBN(Number(fightGasOffset) + ((Number(fightBaseline) * Math.sqrt(parseInt(enemy.power) / 1000)) * parseInt(stamina)))));
-            const alignedPower = getAlignedCharacterPower(charData, weapData)
-            const expReward = Math.floor((enemy.power / alignedPower) * 32) * parseInt(stamina)
+            var reward = fromEther(await getTokenGainForFight(enemy.power) * parseInt(stamina));
+            var alignedPower = getAlignedCharacterPower(charData, weapData)
+            var expReward = Math.floor((enemy.power / alignedPower) * 32) * parseInt(stamina)
             return `#${i + 1} | ${elemToColor(enemy.element)} | ${enemy.power} | ${truncateToDecimals(reward, 6)} | ${expReward} | ${chanceColor(chance)}<br>`
         })))
         $('#btn-simulate').removeAttr('disabled')
@@ -493,11 +503,6 @@ function rename(address) {
         backdrop: 'static',
         keyboard: false
     })
-}
-
-function addressPrivacy(address) {
-    if (hideAddress) return `${address.substr(0, 6)}...${address.substr(-4, 4)}`
-    return address
 }
 
 function export_data() {
@@ -553,7 +558,10 @@ function import_data() {
             if (hideAddress) localStorage.setItem('hideAddress', hideAddress)
             if (currCurrency) localStorage.setItem('currency', currCurrency)
 
-            toggleHelper(hideAddress)
+            addressHelper(hideAddress)            
+            charHelper(hideChars)
+            skillsHelper(hideSkills)
+            unstakeHelper(hideUnstake)
             refresh()
 
             $('#modal-import').modal('hide')
@@ -561,13 +569,51 @@ function import_data() {
     } else alert("Please import a valid json/text file");
 }
 
-function toggleHelper(hide) {
+function addressHelper(hide) {
     if (hide) {
         $('.toggle.btn.btn-sm').removeClass('btn-primary')
         $('.toggle.btn.btn-sm').addClass('btn-danger off')
+        $('.address-column').hide()
     } else {
         $('.toggle.btn.btn-sm').addClass('btn-primary')
         $('.toggle.btn.btn-sm').removeClass('btn-danger off')
+        $('.address-column').show()
+    }
+}
+
+function charHelper(hide) {
+    if (hide) {
+        $('.toggle.btn.btn-sm').removeClass('btn-primary')
+        $('.toggle.btn.btn-sm').addClass('btn-danger off')
+        $('.char-column').hide()
+    } else {
+        $('.toggle.btn.btn-sm').addClass('btn-primary')
+        $('.toggle.btn.btn-sm').removeClass('btn-danger off')
+        $('.char-column').show()
+    }
+}
+
+function skillsHelper(hide) {
+    if (hide) {
+        $('.toggle.btn.btn-sm').removeClass('btn-primary')
+        $('.toggle.btn.btn-sm').addClass('btn-danger off')
+        $('.skill-column').hide()
+    } else {
+        $('.toggle.btn.btn-sm').addClass('btn-primary')
+        $('.toggle.btn.btn-sm').removeClass('btn-danger off')
+        $('.skill-column').show()
+    }
+}
+
+function unstakeHelper(hide) {
+    if (hide) {
+        $('.toggle.btn.btn-sm').removeClass('btn-primary')
+        $('.toggle.btn.btn-sm').addClass('btn-danger off')
+        $('.unstake-column').hide()
+    } else {
+        $('.toggle.btn.btn-sm').addClass('btn-primary')
+        $('.toggle.btn.btn-sm').removeClass('btn-danger off')
+        $('.unstake-column').show()
     }
 }
 
@@ -621,15 +667,91 @@ function copy_address_to_clipboard() {
 }
 
 function unstakeSkillAt(timeLeft){
-    const timeLeftTimestamp = new Date(new Date().getTime() + (timeLeft * 1000))
+    var timeLeftTimestamp = new Date(new Date().getTime() + (timeLeft * 1000))
     return `<span title="${moment().countdown(timeLeftTimestamp)}">${moment(timeLeftTimestamp).fromNow()}`;
+}
+
+function updateBalanceLabel () {
+    $('#label-tbalance').html((currentNetwork === 'bsc' ? 'Total BNB Balance' : 'Total HT Balance'))
+    $('#label-balance').html((currentNetwork === 'bsc' ? 'BNB Balance' : 'HT Balance'))
+}
+
+const getLogs = async (start, end, address) => getPastEvents(
+    'FightOutcome',
+    start,        
+    end,
+    conAddress[currentNetwork].cryptoBlades,
+    [
+        '0x7a58aac6530017822bf3210fccef7efa31f56277f19966bc887bfb11f40ca96d',
+        web3.eth.abi.encodeParameter('address', address)
+    ]
+);
+
+const delay = async ms => await new Promise(resolve => setTimeout(resolve, ms))
+
+async function logs(address) {
+    const huntResult = $('#table-logs tbody')
+    const latestBlock = await getLatestBlock()
+    let maxBlocks = 1500
+    let current = latestBlock.number - (maxBlocks * 20)
+    let list = [], fights = 0, wins = 0, skill = 0, exp = 0
+
+    for(let i = 0; i < 10; i++ ){
+        list.push(current)
+        current += maxBlocks
+    }
+    huntResult.html('')
+    $('#card-fights').html(0)
+    $('#card-winrate').html('0.00%')
+    $('#card-skill').html(0)
+    $('#card-exp').html(0)
+    $('#table-logs').bootstrapTable('showLoading')
+     
+    
+    $('#modal-logs').modal('show', {
+        backdrop: 'static',
+        keyboard: false
+    })
+    let count = 0
+    for(let i of list) {
+        try {
+            const hResults = await getLogs(i, i + maxBlocks, address)
+            count += hResults.length
+            await Promise.all(hResults.map(async result => {
+                const {character, weapon, enemyRoll, playerRoll, skillGain, xpGain} = result.returnValues
+                fights += 1
+                skill += Number(fromEther(skillGain))
+                exp += Number(xpGain)
+                if (parseInt(playerRoll) > parseInt(enemyRoll)) wins += 1
+                huntResult.append(`<tr>
+                                <td class='text-white text-center'>${(parseInt(playerRoll) > parseInt(enemyRoll) ? '<span class="text-success">Won</span>' : '<span class="text-danger">Lost</span>')}</td>
+                                <td class='text-white text-center'>${character}</td>
+                                <td class='text-white text-center'>${weapon}</td>
+                                <td class='text-white text-center'>${playerRoll}</td>
+                                <td class='text-white text-center'>${enemyRoll}</td>
+                                <td class='text-white text-center'>${parseFloat(fromEther(skillGain)).toFixed(6)}</td>
+                                <td class='text-white text-center'>${xpGain}</td>
+                            </tr>`)
+            }))
+        }catch(e) {
+            console.log(e)
+        }
+    }
+    if (count === 0) huntResult.html('<tr><td class="text-center text-white" colspan="7">No fights retrieved</td></tr>')
+    $('#card-fights').html(fights)
+    $('#card-winrate').html(`${(wins > 0 ? parseFloat((wins / fights) * 100).toFixed(2) : '0.00')}%`)
+    $('#card-skill').html(parseFloat(skill).toFixed(6))
+    $('#card-exp').html(exp)
+    $('#table-logs').bootstrapTable('hideLoading')
 }
 
 
 $('#btn-privacy').on('change', (e) => {
     hideAddress = e.currentTarget.checked
     localStorage.setItem('hideAddress', hideAddress)
-    refresh()
+    if (hideAddress) $('.address-column').hide()
+    else $('.address-column').show()
+    //refresh()
 })
 
 $("#btn-tax").on('change', (e) => {
@@ -637,6 +759,27 @@ $("#btn-tax").on('change', (e) => {
     localStorage.setItem('includeClaimTax', includeClaimTax)
     clearFiat()
     refresh()
+})
+
+$("#btn-hchars").on('change', (e) => {
+    hideChars = e.currentTarget.checked
+    localStorage.setItem('hideChars', hideChars)
+    if (hideChars) $('.char-column').hide()
+    else $('.char-column').show()
+})
+
+$("#btn-hskills").on('change', (e) => {
+    hideSkills = e.currentTarget.checked
+    localStorage.setItem('hideSkills', hideSkills)
+    if (hideSkills) $('.skill-column').hide()
+    else $('.skill-column').show()
+})
+
+$("#btn-hunstake").on('change', (e) => {
+    hideUnstake = e.currentTarget.checked
+    localStorage.setItem('hideUnstake', hideUnstake)
+    if (hideUnstake) $('.unstake-column').hide()
+    else $('.unstake-column').show()
 })
 
 $("#select-currency").on('change', (e) => {
@@ -648,6 +791,24 @@ $("#select-currency").on('change', (e) => {
     refresh()
 })
 
+$("#select-network").on('change', (e) => {
+    currentNetwork = e.currentTarget.value
+    localStorage.setItem('network', currentNetwork)
+    populateNetwork()
+    updateBalanceLabel()
+    web3 = new Web3(nodes[currentNetwork]);
+    varakingReward = new web3.eth.Contract(IStakingRewards, conAddress[currentNetwork].staking);
+    varakingToken = new web3.eth.Contract(IERC20, conAddress[currentNetwork].token);
+    conCryptoBlades = new web3.eth.Contract(CryptoBlades, conAddress[currentNetwork].cryptoBlades);
+    conCharacters = new web3.eth.Contract(Characters, conAddress[currentNetwork].character);
+    conWeapons = new web3.eth.Contract(Weapons, conAddress[currentNetwork].weapon);
+    conMarket = new web3.eth.Contract(NFTMarket, conAddress[currentNetwork].market);
+    skillPair = new web3.eth.Contract(SwapPair, conAddress[currentNetwork].skillPair)
+    gasPair = new web3.eth.Contract(SwapPair, conAddress[currentNetwork].tokenPair)
+    refresh()
+    clearFiat()
+    priceTicker()
+})
 
 $('#modal-add-account').on('shown.bs.modal', function (e) {
     $('#inp-name').val('')

@@ -78,9 +78,46 @@ const NFTMarket = [
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "newTargetBuyer",
+        "type": "address"
+      }
+    ],
+    "name": "ListingTargetBuyerChange",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "seller",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "contract IERC721",
+        "name": "nftAddress",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "nftID",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "price",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "targetBuyer",
+        "type": "address"
       }
     ],
     "name": "NewListing",
@@ -219,6 +256,32 @@ const NFTMarket = [
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "addFee",
+    "outputs": [
+      {
+        "internalType": "int128",
+        "name": "",
+        "type": "int128"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "changeFee",
+    "outputs": [
+      {
+        "internalType": "int128",
+        "name": "",
+        "type": "int128"
       }
     ],
     "stateMutability": "view",
@@ -380,6 +443,19 @@ const NFTMarket = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "priceOracleSkillPerUsd",
+    "outputs": [
+      {
+        "internalType": "contract IPriceOracle",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -492,6 +568,19 @@ const NFTMarket = [
       }
     ],
     "name": "migrateTo_a98a9ac",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IPriceOracle",
+        "name": "_priceOracleSkillPerUsd",
+        "type": "address"
+      }
+    ],
+    "name": "migrateTo_2316231",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -893,11 +982,84 @@ const NFTMarket = [
         "internalType": "uint256",
         "name": "_id",
         "type": "uint256"
+      }
+    ],
+    "name": "getTargetBuyer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IERC721",
+        "name": "_tokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "start",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "length",
+        "type": "uint256"
+      }
+    ],
+    "name": "getListingSlice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "returnedCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "ids",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "sellers",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "prices",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IERC721",
+        "name": "_tokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_id",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
         "name": "_price",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_targetBuyer",
+        "type": "address"
       }
     ],
     "name": "addListing",
@@ -939,6 +1101,29 @@ const NFTMarket = [
         "internalType": "uint256",
         "name": "_id",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_newTargetBuyer",
+        "type": "address"
+      }
+    ],
+    "name": "changeListingTargetBuyer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IERC721",
+        "name": "_tokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_id",
+        "type": "uint256"
       }
     ],
     "name": "cancelListing",
@@ -965,6 +1150,32 @@ const NFTMarket = [
       }
     ],
     "name": "purchaseListing",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "cents",
+        "type": "uint256"
+      }
+    ],
+    "name": "setAddValue",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "cents",
+        "type": "uint256"
+      }
+    ],
+    "name": "setChangeValue",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1106,6 +1317,60 @@ const NFTMarket = [
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "users",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "to",
+        "type": "bool"
+      }
+    ],
+    "name": "setUserBans",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IERC721",
+        "name": "_tokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_id",
+        "type": "uint256"
+      }
+    ],
+    "name": "unlistItem",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IERC721",
+        "name": "_tokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_ids",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "unlistItems",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "contract IERC721",
         "name": "_tokenAddress",
         "type": "address"
@@ -1140,6 +1405,25 @@ const NFTMarket = [
     "name": "recoverSkill",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "int128",
+        "name": "usdAmount",
+        "type": "int128"
+      }
+    ],
+    "name": "usdToSkill",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

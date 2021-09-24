@@ -287,6 +287,19 @@ const Weapons = [
   },
   {
     "inputs": [],
+    "name": "BIT_FEATURE_TRANSFER_BLOCKED",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "DEFAULT_ADMIN_ROLE",
     "outputs": [
       {
@@ -306,6 +319,19 @@ const Weapons = [
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "NUMBERPARAMETER_FEATURE_BITS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -619,6 +645,25 @@ const Weapons = [
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "numberParameters",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "oneFrac",
     "outputs": [
@@ -684,6 +729,19 @@ const Weapons = [
         "internalType": "int128",
         "name": "",
         "type": "int128"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "promos",
+    "outputs": [
+      {
+        "internalType": "contract Promos",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -968,6 +1026,19 @@ const Weapons = [
   {
     "inputs": [
       {
+        "internalType": "contract Promos",
+        "name": "_promos",
+        "type": "address"
+      }
+    ],
+    "name": "migrateTo_surprise",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "id",
         "type": "uint256"
@@ -1045,6 +1116,11 @@ const Weapons = [
         "internalType": "uint256",
         "name": "seed",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "chosenElement",
+        "type": "uint8"
       }
     ],
     "name": "mint",
@@ -1074,6 +1150,11 @@ const Weapons = [
         "internalType": "uint256",
         "name": "seed",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "chosenElement",
+        "type": "uint8"
       }
     ],
     "name": "mintWeaponWithStars",
@@ -1142,6 +1223,11 @@ const Weapons = [
         "internalType": "uint256",
         "name": "seed",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "chosenElement",
+        "type": "uint8"
       }
     ],
     "name": "getRandomProperties",
@@ -1621,6 +1707,34 @@ const Weapons = [
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "playerAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint32",
+        "name": "amountLB",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "amount4B",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "amount5B",
+        "type": "uint32"
+      }
+    ],
+    "name": "incrementDustSupplies",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "burnID",
         "type": "uint256"
@@ -1787,8 +1901,62 @@ const Weapons = [
       },
       {
         "internalType": "uint8",
+        "name": "charTrait",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "drainAmount",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bool",
+        "name": "allowNegativeDurability",
+        "type": "bool"
+      }
+    ],
+    "name": "getFightDataAndDrainDurability",
+    "outputs": [
+      {
+        "internalType": "int128",
+        "name": "",
+        "type": "int128"
+      },
+      {
+        "internalType": "int128",
+        "name": "",
+        "type": "int128"
+      },
+      {
+        "internalType": "uint24",
+        "name": "",
+        "type": "uint24"
+      },
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
         "name": "amount",
         "type": "uint8"
+      },
+      {
+        "internalType": "bool",
+        "name": "allowNegativeDurability",
+        "type": "bool"
       }
     ],
     "name": "drainDurability",
@@ -1953,6 +2121,48 @@ const Weapons = [
       }
     ],
     "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "bit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "setFeatureEnabled",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      }
+    ],
+    "name": "canRaid",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]
